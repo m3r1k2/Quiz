@@ -1,0 +1,93 @@
+{% extends "main.html" %}
+
+{% block content %}
+<h2>Гра онлайн</h2>
+
+<div id="question-block" style="display:none;">
+    <h3 id="question-text"></h3>
+    <div id="answers"></div>
+    <p>⏳ <span id="timer"></span></p>
+</div>
+
+<div id="results" style="display:none;"></div>
+
+<script>
+const room = "{{ request.GET.room }}";
+
+const socket = new WebSocket(
+    "ws://" + window.location.host + "/ws/room/" + room + "/"
+);
+
+let player_id = "{{ request.user.quizplayer_set.first.id }}";
+
+socket.onmessage = function(e){
+    let data = JSON.parse(e.data);
+
+    if(data.event === "question"){
+        showQuestion(data);
+    }
+
+    if(data.event === "finish"){
+        showResults(data.results);
+    }
+};
+
+function showQuestion(data){
+    document.getElementById("results").style.display = "none";
+    document.getElementById("question-block").style.display = "block";
+
+    document.getElementById("question-text").innerText = data.text;
+
+    let ansBlock = document.getElementById("answers");
+    ansBlock.innerHTML = "";
+
+    data.answers.forEach((ans, i)=>{
+        ansBlock.innerHTML += `
+            <button class="btn btn-primary m-2"
+                onclick="sendAnswer(${data.id}, '${ans}', ${data.index})">${ans}</button>
+        `;
+    });
+
+    startTimer(data.time);
+}
+
+function sendAnswer(qid, answer, index){
+    socket.send(JSON.stringify({
+        action: "answer",
+        player_id: player_id,
+        question_id: qid,
+        answer_id: answer
+    }));
+
+    setTimeout(()=>{
+        socket.send(JSON.stringify({
+            action: "start_quiz",
+            index: index + 1
+        }));
+    }, 1000);
+}
+
+function showResults(results){
+    let box = document.getElementById("results");
+    box.innerHTML = "<h3>Результати:</h3>";
+
+    results.forEach(r=>{
+        box.innerHTML += `<p>${r.user__username} — ${r.score}</p>`;
+    });
+
+    box.style.display = "block";
+}
+
+function startTimer(t){
+    let timer = document.getElementById("timer");
+    timer.innerText = t;
+
+    let x = setInterval(()=>{
+        t--;
+        timer.innerText = t;
+        if(t <= 0) clearInterval(x);
+    }, 1000);
+}
+</script>
+
+{% endblock %}

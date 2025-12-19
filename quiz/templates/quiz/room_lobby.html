@@ -1,0 +1,26 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<h2>Кімната: {{ object.code }}</h2>
+
+<h3>Гравці:</h3>
+<ul id="players">
+    {% for p in players %}
+        <li>{{ p.user.username }}</li>
+    {% endfor %}
+</ul>
+
+{% if request.user == object.host %}
+    <button id="start-btn" class="btn btn-success">Старт</button>
+{% else %}
+    <p class="text-muted">Очікуємо, поки автор почне…</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'quiz/room_lobby.js' %}"></script>
+<script>
+    const ROOM_CODE = "{{ object.code }}";
+</script>
+{% endblock %}

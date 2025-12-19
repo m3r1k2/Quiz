@@ -1,0 +1,17 @@
+{% extends "main.html" %}
+{% block title %}Створити вікторину{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm p-4">
+  <h2>Створити вікторину</h2>
+
+  <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <button type="submit" class="btn btn-success w-100 mt-3">
+          Створити
+      </button>
+  </form>
+</div>
+{% endblock %}

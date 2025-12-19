@@ -1,0 +1,20 @@
+{% extends "main.html" %}
+{% block title %}Мої вікторини{% endblock %}
+
+{% block content %}
+<h2>Мої вікторини</h2>
+
+<div class="mt-3">
+  {% for quiz in quizzes %}
+    <div class="card p-3 mb-2 shadow-sm">
+      <h4>{{ quiz.title }}</h4>
+      <p>Тема: {{ quiz.theme }}</p>
+      <p>Запитань: {{ quiz.que_count }}</p>
+
+      <a href="{% url 'quiz:detail' quiz.pk %}" class="btn btn-primary mt-2">Переглянути</a>
+    </div>
+  {% empty %}
+    <p class="text-muted">У вас ще немає створених вікторин.</p>
+  {% endfor %}
+</div>
+{% endblock %}

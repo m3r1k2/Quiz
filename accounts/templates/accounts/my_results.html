@@ -1,0 +1,22 @@
+{% extends "main.html" %}
+{% block title %}Історія проходжень{% endblock %}
+
+{% block content %}
+<h2>Моя історія проходжень</h2>
+
+<div class="mt-3">
+  {% for res in results %}
+    <div class="card p-3 mb-2 shadow-sm">
+      <h4>{{ res.quiz.title }}</h4>
+      <p><strong>Бали:</strong> {{ res.score }}</p>
+      <p><strong>Дата:</strong> {{ res.created_at|date:"d.m.Y H:i" }}</p>
+
+      <a href="{% url 'quiz:detail' res.quiz.pk %}" class="btn btn-outline-primary mt-2">
+        Переглянути вікторину
+      </a>
+    </div>
+  {% empty %}
+    <p class="text-muted">Ви ще не проходили жодної вікторини.</p>
+  {% endfor %}
+</div>
+{% endblock %}

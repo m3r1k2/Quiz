@@ -1,0 +1,13 @@
+<script>
+const socket = new WebSocket(
+    "ws://" + window.location.host + "/ws/room/{{ room.code }}/"
+);
+
+socket.onmessage = function(e){
+    const data = JSON.parse(e.data);
+
+    if (data.event === "players"){
+        updatePlayers(data.players);
+    }
+};
+</script>

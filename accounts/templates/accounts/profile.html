@@ -1,0 +1,22 @@
+{% extends "main.html" %}
+{% block title %}Мій профіль{% endblock %}
+
+{% block content %}
+<h2>Профіль користувача</h2>
+<div class="card p-3 shadow-sm mt-3">
+  {% if user.avatar %}
+    <img src="{{ user.avatar.url }}" alt="Avatar" width="150" class="rounded mb-3">
+  {% endif %}
+  <p><strong>Ім'я користувача:</strong> {{ user.username }}</p>
+  <p><strong>Email:</strong> {{ user.email }}</p>
+  <p><strong>Роль:</strong> {{ user.get_role_display }}</p>
+  <p><strong>Опис:</strong> {{ user.bio|default:"Немає опису" }}</p>
+  <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary mt-2">Редагувати профіль</a>
+  <a href="{% url 'accounts:my_results' %}" class="btn btn-secondary mt-2">
+  Історія проходжень
+</a>
+  <a href="{% url 'accounts:my_quizzes' %}" class="btn btn-primary">Мої вікторини</a>
+
+</div>
+
+{% endblock %}

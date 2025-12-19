@@ -1,0 +1,16 @@
+{% extends "main.html" %}
+{% block title %}Редагувати вікторину{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm p-4">
+  <h2 class="mb-3">Редагування вікторини: {{ quiz.title }}</h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary w-100 mt-3">Зберегти зміни</button>
+    <a href="{% url 'quiz:detail' quiz.pk %}" class="btn btn-secondary w-100 mt-2">Скасувати</a>
+  </form>
+</div>
+{% endblock %}

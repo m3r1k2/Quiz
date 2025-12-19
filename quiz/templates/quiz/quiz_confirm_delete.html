@@ -1,0 +1,14 @@
+{% extends "main.html" %}
+{% block title %}Видалити вікторину{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm p-4 text-center">
+  <h3>Видалити "{{ quiz.title }}"?</h3>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger w-100 mt-3">Так, видалити</button>
+    <a href="{% url 'quiz:detail' quiz.pk %}" class="btn btn-secondary w-100 mt-2">Скасувати</a>
+  </form>
+</div>
+{% endblock %}

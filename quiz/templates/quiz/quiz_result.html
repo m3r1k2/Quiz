@@ -1,0 +1,13 @@
+{% extends "main.html" %}
+{% block title %}Результат{% endblock %}
+
+{% block content %}
+<div class="card p-4 shadow-sm text-center">
+  <h2>Результат "{{ quiz.title }}"</h2>
+  <p class="fs-4 mt-3">Ваш результат: <strong>{{ score }}</strong> правильних відповідей</p>
+
+  <a href="{% url 'quiz:list' %}" class="btn btn-primary mt-3">
+    Повернутись до списку
+  </a>
+</div>
+{% endblock %}
