@@ -1,93 +1,128 @@
 {% extends "main.html" %}
 
 {% block content %}
-<h2>Гра онлайн</h2>
+<h1>QUIZ PAGE LOADED</h1>
+
+<h2>Онлайн-вікторина</h2>
 
 <div id="question-block" style="display:none;">
     <h3 id="question-text"></h3>
+
+    <div id="media-block" class="my-3"></div>
+
     <div id="answers"></div>
-    <p>⏳ <span id="timer"></span></p>
+
+    <p>⏳ Час: <span id="timer"></span> с</p>
 </div>
 
 <div id="results" style="display:none;"></div>
 
 <script>
-const room = "{{ request.GET.room }}";
+const roomCode = "{{ room.code }}";
+const playerId = {{ player.id }};
 
 const socket = new WebSocket(
-    "ws://" + window.location.host + "/ws/room/" + room + "/"
+    "ws://" + window.location.host + "/ws/room/" + roomCode + "/"
 );
 
-let player_id = "{{ request.user.quizplayer_set.first.id }}";
+let timerInterval = null;
 
-socket.onmessage = function(e){
-    let data = JSON.parse(e.data);
+// ================== SOCKET ==================
 
-    if(data.event === "question"){
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    if (data.event === "question") {
         showQuestion(data);
     }
 
-    if(data.event === "finish"){
+    if (data.event === "finish") {
         showResults(data.results);
     }
 };
 
-function showQuestion(data){
+// ================== QUESTION ==================
+
+function showQuestion(data) {
     document.getElementById("results").style.display = "none";
     document.getElementById("question-block").style.display = "block";
 
     document.getElementById("question-text").innerText = data.text;
 
-    let ansBlock = document.getElementById("answers");
-    ansBlock.innerHTML = "";
+    // media
+    const media = document.getElementById("media-block");
+    media.innerHTML = "";
 
-    data.answers.forEach((ans, i)=>{
-        ansBlock.innerHTML += `
-            <button class="btn btn-primary m-2"
-                onclick="sendAnswer(${data.id}, '${ans}', ${data.index})">${ans}</button>
+    if (data.type === "image" && data.file_url) {
+        media.innerHTML = `<img src="${data.file_url}" class="img-fluid rounded">`;
+    }
+
+    if (data.type === "video" && data.file_url) {
+        media.innerHTML = `
+            <video controls class="w-100 rounded">
+                <source src="${data.file_url}">
+            </video>
+        `;
+    }
+
+    // answers
+    const answersDiv = document.getElementById("answers");
+    answersDiv.innerHTML = "";
+
+    data.answers.forEach(a => {
+        answersDiv.innerHTML += `
+            <button class="btn btn-outline-primary d-block mb-2"
+                    onclick="sendAnswer(${data.id}, ${a.id})">
+                ${a.text}
+            </button>
         `;
     });
 
     startTimer(data.time);
 }
 
-function sendAnswer(qid, answer, index){
+// ================== ANSWER ==================
+
+function sendAnswer(questionId, answerId) {
     socket.send(JSON.stringify({
         action: "answer",
-        player_id: player_id,
-        question_id: qid,
-        answer_id: answer
+        player_id: playerId,
+        question_id: questionId,
+        answer_id: answerId
     }));
+}
 
-    setTimeout(()=>{
-        socket.send(JSON.stringify({
-            action: "start_quiz",
-            index: index + 1
-        }));
+// ================== TIMER ==================
+
+function startTimer(seconds) {
+    clearInterval(timerInterval);
+
+    const timer = document.getElementById("timer");
+    timer.innerText = seconds;
+
+    timerInterval = setInterval(() => {
+        seconds--;
+        timer.innerText = seconds;
+
+        if (seconds <= 0) {
+            clearInterval(timerInterval);
+        }
     }, 1000);
 }
 
-function showResults(results){
-    let box = document.getElementById("results");
-    box.innerHTML = "<h3>Результати:</h3>";
+// ================== RESULTS ==================
 
-    results.forEach(r=>{
-        box.innerHTML += `<p>${r.user__username} — ${r.score}</p>`;
+function showResults(results) {
+    const box = document.getElementById("results");
+    box.innerHTML = "<h3>Результати</h3><ul>";
+
+    results.forEach(r => {
+        box.innerHTML += `<li>${r.user__username} — ${r.score}</li>`;
     });
 
+    box.innerHTML += "</ul>";
     box.style.display = "block";
-}
-
-function startTimer(t){
-    let timer = document.getElementById("timer");
-    timer.innerText = t;
-
-    let x = setInterval(()=>{
-        t--;
-        timer.innerText = t;
-        if(t <= 0) clearInterval(x);
-    }, 1000);
+    document.getElementById("question-block").style.display = "none";
 }
 </script>
-
 {% endblock %}

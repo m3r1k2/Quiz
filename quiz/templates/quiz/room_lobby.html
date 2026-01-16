@@ -12,15 +12,16 @@
 </ul>
 
 {% if request.user == object.host %}
-    <button id="start-btn" class="btn btn-success">Старт</button>
-{% else %}
+<button type="button" onclick="startGame()">
+    Start
+</button>{% else %}
     <p class="text-muted">Очікуємо, поки автор почне…</p>
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'quiz/room_lobby.js' %}"></script>
 <script>
     const ROOM_CODE = "{{ object.code }}";
 </script>
+<script src="{% static 'quiz/room_lobby.js' %}"></script>
 {% endblock %}

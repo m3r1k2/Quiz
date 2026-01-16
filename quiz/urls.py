@@ -3,8 +3,10 @@ from .views import (
     QuizListView, QuizDetailView, QuizPlayView, QuizResultView,
     QuizUpdateView, QuizDeleteView, QuizCreateView, TemplateView,
     QuestionCreateView,
-    CreateRoomView, JoinRoomView, RoomLobbyView, StartRoomView,
+    CreateRoomView, JoinRoomView, RoomLobbyView, StartRoomView,RoomPlayView
 )
+from django.conf import settings
+from django.conf.urls.static import static
 
 app_name = "quiz"
 
@@ -22,4 +24,6 @@ path("room/create/<int:pk>/", CreateRoomView.as_view(), name="room_create"),
 path("room/join/", JoinRoomView.as_view(), name="room_join"),
 path("room/<str:code>/", RoomLobbyView.as_view(), name="room_lobby"),
 path("room/<str:code>/start/", StartRoomView.as_view(), name="room_start"),
+path("room/<str:code>/play/", RoomPlayView.as_view(), name="room_play")
+
 ]

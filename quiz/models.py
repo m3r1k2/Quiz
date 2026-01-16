@@ -91,6 +91,7 @@ class QuizRoom(models.Model):
 class QuizPlayer(models.Model):
     room = models.ForeignKey(QuizRoom, on_delete=models.CASCADE, related_name="players")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    score = models.PositiveIntegerField(default=0)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

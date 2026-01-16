@@ -207,12 +207,39 @@ class StartRoomView(LoginRequiredMixin, View):
         return redirect("quiz:play", pk=room.quiz.pk)
 
 class RoomPlayView(LoginRequiredMixin, TemplateView):
-    template_name = "quiz/game_play.html"
+    template_name = "quiz/quiz_play.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         room = get_object_or_404(QuizRoom, code=self.kwargs["code"])
-        player = QuizPlayer.objects.get(room=room, user=self.request.user)
+
+        QuizPlayer.objects.get_or_create(
+            room=room,
+            user=self.request.user
+        )
+
         ctx["room"] = room
-        ctx["player"] = player
+        ctx["quiz"] = room.quiz
+        ctx["questions"] = room.quiz.questions.prefetch_related("answers")
         return ctx
+
+    def post(self, request, *args, **kwargs):
+        room = get_object_or_404(QuizRoom, code=self.kwargs["code"])
+        quiz = room.quiz
+        questions = quiz.questions.all()
+
+        correct = 0
+        for question in questions:
+            selected_id = request.POST.get(f"question_{question.id}")
+            if selected_id:
+                ans = Answer.objects.get(id=selected_id)
+                if ans.correct:
+                    correct += 1
+
+        Result.objects.create(
+            user=request.user,
+            quiz=quiz,
+            score=correct
+        )
+
+        return redirect("quiz:result", pk=quiz.pk)
