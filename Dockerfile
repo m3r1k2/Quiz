@@ -12,4 +12,4 @@ COPY . /app/
 
 RUN python manage.py collectstatic --noinput
 
-CMD ["gunicorn", "online_quiz.asgi:application", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "online_quiz.asgi:application"]
