@@ -39,13 +39,24 @@ class QuizPlayView(LoginRequiredMixin, TemplateView):
         correct = 0
 
         for question in questions:
-            selected_id = request.POST.get(f"question_{question.id}")
-            if selected_id:
-                ans = Answer.objects.get(id=selected_id)
-                if ans.correct:
-                    correct += 1
+            # ⬅️ ПОЛУЧАЕМ СПИСОК ОТВЕТОВ
+            selected_ids = request.POST.getlist(f"question_{question.id}")
+            selected_ids = set(map(int, selected_ids))
 
-        Result.objects.create(user=request.user, quiz=quiz, score=correct)
+            correct_ids = set(
+                question.answers
+                .filter(correct=True)
+                .values_list("id", flat=True)
+            )
+
+            if selected_ids == correct_ids:
+                correct += 1
+
+        Result.objects.create(
+            user=request.user,
+            quiz=quiz,
+            score=correct
+        )
         return redirect("quiz:result", pk=quiz.pk)
 class QuizResultView(LoginRequiredMixin, TemplateView):
     template_name = "quiz/quiz_result.html"
@@ -227,19 +238,24 @@ class RoomPlayView(LoginRequiredMixin, TemplateView):
         room = get_object_or_404(QuizRoom, code=self.kwargs["code"])
         quiz = room.quiz
         questions = quiz.questions.all()
-
         correct = 0
+
         for question in questions:
-            selected_id = request.POST.get(f"question_{question.id}")
-            if selected_id:
-                ans = Answer.objects.get(id=selected_id)
-                if ans.correct:
-                    correct += 1
+            selected_ids = request.POST.getlist(f"question_{question.id}")
+            selected_ids = set(map(int, selected_ids))
+
+            correct_ids = set(
+                question.answers
+                .filter(correct=True)
+                .values_list("id", flat=True)
+            )
+
+            if selected_ids == correct_ids:
+                correct += 1
 
         Result.objects.create(
             user=request.user,
             quiz=quiz,
             score=correct
         )
-
         return redirect("quiz:result", pk=quiz.pk)

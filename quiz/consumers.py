@@ -1,11 +1,10 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from .models import QuizRoom
+from .models import QuizRoom, Answer, QuizPlayer
 
 
 class RoomConsumer(AsyncWebsocketConsumer):
-
     async def connect(self):
         self.code = self.scope["url_route"]["kwargs"]["code"]
         self.room_group = f"room_{self.code}"
@@ -43,7 +42,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        print("START RECEIVED FROM", self.scope["user"])
 
         if data.get("action") == "start":
             await self.channel_layer.group_send(
@@ -56,6 +54,29 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     }
                 }
             )
+
+        # ✅ ПРИЁМ МНОЖЕСТВЕННОГО ОТВЕТА
+        if data.get("action") == "answer":
+            await self.check_answer(data)
+
+    @database_sync_to_async
+    def check_answer(self, data):
+        player = QuizPlayer.objects.get(
+            id=data["player_id"]
+        )
+
+        user_answers = set(data.get("answers", []))
+
+        correct_answers = set(
+            Answer.objects.filter(
+                question_id=data["question_id"],
+                correct=True
+            ).values_list("id", flat=True)
+        )
+
+        if user_answers == correct_answers:
+            player.score += 1
+            player.save()
 
     async def send_event(self, event):
         await self.send(text_data=json.dumps(event["data"]))

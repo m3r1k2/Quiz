@@ -1,95 +1,95 @@
-{% extends "main.html" %}
+    {% extends "main.html" %}
 
-{% block content %}
-<h2>{{ quiz.title }}</h2>
+    {% block content %}
+    <h2>{{ quiz.title }}</h2>
 
-<form method="post" id="quizForm">
-    {% csrf_token %}
+    <form method="post" id="quizForm">
+        {% csrf_token %}
 
-    {% for question in questions %}
-        <div class="question-block" id="q{{ forloop.counter0 }}" style="display: none;">
-            <div class="card p-3 mb-3">
+        {% for question in questions %}
+            <div class="question-block" id="q{{ forloop.counter0 }}" style="display: none;">
+                <div class="card p-3 mb-3">
 
-                <!-- Таймер -->
-                <div class="question-timer" data-time="{{ quiz.que_time }}">
-                    ⏳ <span class="timer-value">{{ quiz.que_time }}</span> сек
+                    <!-- Таймер -->
+                    <div class="question-timer" data-time="{{ quiz.que_time }}">
+                        ⏳ <span class="timer-value">{{ quiz.que_time }}</span> сек
+                    </div>
+
+                    <h5>{{ forloop.counter }}. {{ question.text }}</h5>
+
+                    {% for answer in question.answers.all %}
+                    <div class="form-check">
+                        <input type="checkbox"
+           name="question_{{ question.id }}"
+           value="{{ answer.id }}"
+           id="answer_{{ answer.id }}"
+           class="form-check-input">
+                        <label class="form-check-label" for="answer_{{ answer.id }}">
+                            {{ answer.answer_choose }}
+                        </label>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Кнопка Ответить -->
+                    <button type="button" class="btn btn-primary mt-3 next-btn">
+                        Ответить
+                    </button>
                 </div>
-
-                <h5>{{ forloop.counter }}. {{ question.text }}</h5>
-
-                {% for answer in question.answers.all %}
-                <div class="form-check">
-                    <input type="radio"
-                        name="question_{{ question.id }}"
-                        value="{{ answer.id }}"
-                        id="answer_{{ answer.id }}"
-                        class="form-check-input">
-                    <label class="form-check-label" for="answer_{{ answer.id }}">
-                        {{ answer.answer_choose }}
-                    </label>
-                </div>
-                {% endfor %}
-
-                <!-- Кнопка Ответить -->
-                <button type="button" class="btn btn-primary mt-3 next-btn">
-                    Ответить
-                </button>
             </div>
-        </div>
-    {% endfor %}
+        {% endfor %}
 
-    <button class="btn btn-success w-100" style="display:none;" id="finishBtn">
-        Завершить
-    </button>
-</form>
+        <button class="btn btn-success w-100" style="display:none;" id="finishBtn">
+            Завершить
+        </button>
+    </form>
 
-<script>
-let blocks = document.querySelectorAll('.question-block');
-let current = 0;
-let timerInterval = null;
+    <script>
+    let blocks = document.querySelectorAll('.question-block');
+    let current = 0;
+    let timerInterval = null;
 
-function showQuestion(index) {
-    blocks.forEach(b => b.style.display = "none");
-    blocks[index].style.display = "block";
-    startTimer(blocks[index]);
-}
+    function showQuestion(index) {
+        blocks.forEach(b => b.style.display = "none");
+        blocks[index].style.display = "block";
+        startTimer(blocks[index]);
+    }
 
-function startTimer(block) {
-    let span = block.querySelector(".timer-value");
-    let time = parseInt(block.querySelector(".question-timer").dataset.time);
+    function startTimer(block) {
+        let span = block.querySelector(".timer-value");
+        let time = parseInt(block.querySelector(".question-timer").dataset.time);
 
-    clearInterval(timerInterval);
+        clearInterval(timerInterval);
 
-    timerInterval = setInterval(() => {
-        time--;
-        span.textContent = time;
+        timerInterval = setInterval(() => {
+            time--;
+            span.textContent = time;
 
-        if (time <= 0) {
+            if (time <= 0) {
+                clearInterval(timerInterval);
+                nextQuestion();
+            }
+        }, 1000);
+    }
+
+    function nextQuestion() {
+        current++;
+
+        if (current >= blocks.length) {
+            document.querySelector("#finishBtn").style.display = "block";
+            document.querySelector("#quizForm").submit();
+        } else {
+            showQuestion(current);
+        }
+    }
+
+    document.querySelectorAll(".next-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
             clearInterval(timerInterval);
             nextQuestion();
-        }
-    }, 1000);
-}
-
-function nextQuestion() {
-    current++;
-
-    if (current >= blocks.length) {
-        document.querySelector("#finishBtn").style.display = "block";
-        document.querySelector("#quizForm").submit();
-    } else {
-        showQuestion(current);
-    }
-}
-
-document.querySelectorAll(".next-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        clearInterval(timerInterval);
-        nextQuestion();
+        });
     });
-});
 
-showQuestion(0);
-</script>
+    showQuestion(0);
+    </script>
 
-{% endblock %}
+    {% endblock %}
