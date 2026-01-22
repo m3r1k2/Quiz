@@ -4,28 +4,32 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import CreateView, DetailView, UpdateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
+
 from .forms import RegisterForm, ProfileEditForm
 from .models import User
-from quiz.models import  Quiz, Result
-from django.shortcuts import redirect
+from quiz.models import Quiz, Result
+
 
 class RegisterView(CreateView):
     model = User
     form_class = RegisterForm
     template_name = "accounts/register.html"
-    success_url = reverse_lazy("main")
+    success_url = reverse_lazy("home")
 
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
-        return redirect("main")
+        return redirect("home")
+
 
 class CustomLoginView(LoginView):
     template_name = "accounts/login.html"
     authentication_form = AuthenticationForm
+    redirect_authenticated_user = True
 
     def get_success_url(self):
-        return reverse_lazy("main")
+        return reverse_lazy("home")
 
 
 class UserLogoutView(LogoutView):
@@ -51,7 +55,6 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
 
-
 class MyQuizzesView(LoginRequiredMixin, ListView):
     model = Quiz
     template_name = "accounts/my_quizzes.html"
@@ -60,10 +63,15 @@ class MyQuizzesView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Quiz.objects.filter(author=self.request.user)
 
-class MyResultsView(LoginRequiredMixin,ListView):
+
+class MyResultsView(LoginRequiredMixin, ListView):
     model = Result
     template_name = "accounts/my_results.html"
     context_object_name = "results"
 
     def get_queryset(self):
-        return Result.objects.filter(user = self.request.user).select_related("quiz")
+        return (
+            Result.objects
+            .filter(user=self.request.user)
+            .select_related("quiz")
+        )

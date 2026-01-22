@@ -1,19 +1,20 @@
 {% extends "main.html" %}
 {% block content %}
-
 <h2>Онлайн-вікторина</h2>
 
 <div id="question-block" style="display:none;">
-  <h3 id="question-text"></h3>
-  <div id="media-block" class="my-3"></div>
+    <h3 id="question-text"></h3>
+    <div id="answers"></div>
 
-  <div id="answers"></div>
+    <button class="btn btn-primary mt-3" id="answerBtn">Ответить</button>
 
-  <button class="btn btn-primary mt-3" onclick="sendAnswer()">
-    Ответить
-  </button>
+    <p class="mt-2">⏳ Час: <span id="timer"></span> с</p>
 
-  <p class="mt-2">⏳ Час: <span id="timer"></span> с</p>
+    {% if room.host == user %}
+    <button class="btn btn-warning mt-2" id="forceBtn">
+        ➡ Следующий вопрос (хост)
+    </button>
+    {% endif %}
 </div>
 
 <div id="results" style="display:none;"></div>
@@ -21,83 +22,74 @@
 <script>
 const roomCode = "{{ room.code }}";
 const playerId = {{ player.id }};
+
+let answered = false;
 let currentQuestionId = null;
-
-const socket = new WebSocket(
-  "ws://" + window.location.host + "/ws/room/" + roomCode + "/"
-);
-
 let timerInterval = null;
 
-// ================= SOCKET =================
-socket.onmessage = function(e) {
-  const data = JSON.parse(e.data);
 
-  if (data.event === "question") {
-    showQuestion(data);
-  }
+const socket = new WebSocket(
+    (location.protocol === "https:" ? "wss" : "ws") +
+    "://" + location.host +
+    "/ws/room/" + roomCode + "/?play=1"
+);
 
-  if (data.event === "finish") {
-    showResults(data.results);
-  }
+socket.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.event === "question") showQuestion(data);
+    if (data.event === "finish") showResults(data.results);
 };
 
-// ================= QUESTION =================
 function showQuestion(data) {
-  currentQuestionId = data.id;
+    answered = false;
+    currentQuestionId = data.id;
 
-  document.getElementById("question-block").style.display = "block";
-  document.getElementById("results").style.display = "none";
-  document.getElementById("question-text").innerText = data.text;
+    document.getElementById("question-block").style.display = "block";
+    document.getElementById("results").style.display = "none";
+    document.getElementById("question-text").innerText = data.text;
 
-  // media
-  const media = document.getElementById("media-block");
-  media.innerHTML = "";
+    const answersDiv = document.getElementById("answers");
+    answersDiv.innerHTML = "";
 
-  if (data.type === "image" && data.file_url) {
-    media.innerHTML = `<img src="${data.file_url}" class="img-fluid rounded">`;
-  }
+    data.answers.forEach(a => {
+        answersDiv.innerHTML += `
+            <div>
+                <input type="checkbox" value="${a.id}" class="answer">
+                ${a.text}
+            </div>
+        `;
+    });
 
-  if (data.type === "video" && data.file_url) {
-    media.innerHTML = `
-      <video controls class="w-100 rounded">
-        <source src="${data.file_url}">
-      </video>`;
-  }
-
-  // answers
-  const answersDiv = document.getElementById("answers");
-  answersDiv.innerHTML = "";
-
-  data.answers.forEach(a => {
-    answersDiv.innerHTML += `
-      <div>
-        <label>
-          <input type="checkbox" value="${a.id}">
-          ${a.text}
-        </label>
-      </div>
-    `;
-  });
-
-  startTimer(data.time);
+    document.getElementById("answerBtn").disabled = false;
+    startTimer(data.time);
 }
 
-// ================= ANSWER =================
-function sendAnswer() {
-  const selected = Array.from(
-    document.querySelectorAll("#answers input:checked")
-  ).map(i => parseInt(i.value));
+document.getElementById("answerBtn").onclick = () => {
+    if (answered) return;
+    answered = true;
 
-  socket.send(JSON.stringify({
-    action: "answer",
-    player_id: playerId,
-    question_id: currentQuestionId,
-    answers: selected
-  }));
-}
+    document.getElementById("answerBtn").disabled = true;
 
-// ================= TIMER =================
+    const selected = [...document.querySelectorAll(".answer:checked")]
+        .map(x => parseInt(x.value));
+
+    socket.send(JSON.stringify({
+        action: "answer",
+        player_id: playerId,
+        question_id: currentQuestionId,
+        answers: selected
+    }));
+
+    document.getElementById("answers").innerHTML +=
+        "<p>⏳ Ждём других игроков...</p>";
+};
+
+{% if room.host == user %}
+document.getElementById("forceBtn").onclick = () => {
+    socket.send(JSON.stringify({ action: "force_next" }));
+};
+{% endif %}
+
 function startTimer(seconds) {
   clearInterval(timerInterval);
   const timer = document.getElementById("timer");
@@ -109,23 +101,21 @@ function startTimer(seconds) {
 
     if (seconds <= 0) {
       clearInterval(timerInterval);
+      document.getElementById("answerBtn").disabled = true;
     }
   }, 1000);
 }
-
-// ================= RESULTS =================
 function showResults(results) {
-  const box = document.getElementById("results");
-  box.innerHTML = "<h3>Результати</h3><ul>";
+    const box = document.getElementById("results");
+    box.innerHTML = "<h3>Результаты</h3><ul>";
 
-  results.forEach(r => {
-    box.innerHTML += `<li>${r.user__username} — ${r.score}</li>`;
-  });
+    results.forEach(r => {
+        box.innerHTML += `<li>${r.user__username} — ${r.score}</li>`;
+    });
 
-  box.innerHTML += "</ul>";
-  box.style.display = "block";
-  document.getElementById("question-block").style.display = "none";
+    box.innerHTML += "</ul>";
+    box.style.display = "block";
+    document.getElementById("question-block").style.display = "none";
 }
 </script>
-
 {% endblock %}

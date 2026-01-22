@@ -2,28 +2,33 @@
 {% block title %}Додати запитання{% endblock %}
 
 {% block content %}
-<div class="card shadow-sm p-4">
-  <h2>Додати запитання до "{{ quiz.title }}"</h2>
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="card card-soft p-4">
+            <h3 class="mb-3">
+                Запитання до «{{ quiz.title }}»
+            </h3>
 
-  <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
 
-      <h4>Питання</h4>
-      {{ question_form.as_p }}
+                <h5 class="mt-3 mb-2">Питання</h5>
+                {{ question_form.as_p }}
 
-      <h4 class="mt-4">Відповіді</h4>
+                <h5 class="mt-4 mb-2">Варіанти відповідей</h5>
+                {{ answer_formset.management_form }}
 
-      {{ answer_formset.management_form }}
+                {% for form in answer_formset %}
+                    <div class="border rounded p-3 mb-2 bg-light">
+                        {{ form.as_p }}
+                    </div>
+                {% endfor %}
 
-      {% for form in answer_formset %}
-        <div class="border rounded p-3 mb-2">
-          {{ form.as_p }}
+                <button class="btn btn-main w-100 mt-4">
+                    Зберегти запитання
+                </button>
+            </form>
         </div>
-      {% endfor %}
-
-      <button class="btn btn-success w-100 mt-3">
-          Зберегти
-      </button>
-  </form>
+    </div>
 </div>
 {% endblock %}

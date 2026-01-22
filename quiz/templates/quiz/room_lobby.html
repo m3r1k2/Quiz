@@ -4,24 +4,28 @@
 {% block content %}
 <h2>Кімната: {{ object.code }}</h2>
 
-<h3>Гравці:</h3>
 <ul id="players">
-    {% for p in players %}
-        <li>{{ p.user.username }}</li>
-    {% endfor %}
+  {% for p in players %}
+    <li>{{ p.user.username }}</li>
+  {% endfor %}
 </ul>
 
 {% if request.user == object.host %}
-<button type="button" onclick="startGame()">
-    Start
-</button>{% else %}
-    <p class="text-muted">Очікуємо, поки автор почне…</p>
+  <button
+    id="startBtn"
+    type="button"
+    class="btn btn-main mt-3"
+  >
+    ▶ Start
+  </button>
+{% else %}
+  <p class="text-muted">Очікуємо хоста…</p>
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
-    const ROOM_CODE = "{{ object.code }}";
+  const ROOM_CODE = "{{ object.code }}";
 </script>
 <script src="{% static 'quiz/room_lobby.js' %}"></script>
 {% endblock %}

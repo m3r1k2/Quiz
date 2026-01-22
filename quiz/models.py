@@ -21,17 +21,9 @@ class Quiz(models.Model):
         related_name='quizzes',
         verbose_name="Автор"
     )
-    que_time = models.PositiveIntegerField(default=30, verbose_name="Час на запитання (сек)")
-    que_count = models.PositiveIntegerField(default=10, verbose_name="Кількість запитань")
+    que_time = models.PositiveIntegerField(default=30)
+    que_count = models.PositiveIntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def save(self, *args, **kwargs):
-        if not self.invite_code:
-            # генеруємо унікальний код (uuid4 короткий)
-            self.invite_code = str(uuid.uuid4())[:8]
-        super().save(*args, **kwargs)
-
-
 
     def __str__(self):
         return self.title
@@ -85,6 +77,9 @@ class QuizRoom(models.Model):
     code = models.CharField(max_length=6, unique=True, default=generate_room_code)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    current_question_index = models.PositiveIntegerField(default=0)
+    question_started_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return f"Room {self.code}"
 
@@ -94,5 +89,4 @@ class QuizPlayer(models.Model):
     score = models.PositiveIntegerField(default=0)
     joined_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.user.username} in {self.room.code}"
+    answered_current = models.BooleanField(default=False)

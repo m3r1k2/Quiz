@@ -1,0 +1,47 @@
+{% extends "main.html" %}
+{% block title %}Головна{% endblock %}
+
+{% block content %}
+
+<div class="text-center mb-5">
+    <h1 class="fw-bold">Онлайн‑вікторини</h1>
+    <p class="text-muted">Грай, створюй та змагайся з друзями</p>
+</div>
+
+<h4 class="mb-3">🔥 Популярні вікторини</h4>
+
+<div class="row mb-5">
+    {% for quiz in popular_quizzes %}
+    <div class="col-md-4 mb-4">
+        <div class="quiz-card d-flex flex-column">
+            <h5 class="fw-bold">{{ quiz.title }}</h5>
+            <p class="text-muted mb-4">Тема: {{ quiz.theme }}</p>
+
+            <a href="{% url 'quiz:detail' quiz.pk %}" class="btn btn-main mt-auto w-100">
+                Переглянути
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<h4 class="mb-3">🆕 Нові вікторини</h4>
+
+<div class="row">
+    {% for quiz in latest_quizzes %}
+    <div class="col-md-4 mb-4">
+        <div class="quiz-card d-flex flex-column">
+            <h6 class="fw-bold">{{ quiz.title }}</h6>
+            <p class="text-muted small mb-4">
+                {{ quiz.created_at|date:"d.m.Y" }}
+            </p>
+
+            <a href="{% url 'quiz:detail' quiz.pk %}" class="btn btn-main mt-auto w-100">
+                Відкрити
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

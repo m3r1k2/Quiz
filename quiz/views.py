@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from .models import Quiz, Question, Answer, Result, QuizRoom, QuizPlayer
 from .forms import QuizForm, QuestionForm, AnswerFormSet
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Count
 
 
 class QuizListView(LoginRequiredMixin, ListView):
@@ -15,6 +16,17 @@ class QuizListView(LoginRequiredMixin, ListView):
 
         return Quiz.objects.all()
 
+    def quiz_list(request):
+        popular_quizzes = (
+            Quiz.objects
+            .annotate(players_count=Count("rooms__players"))
+            .order_by("-players_count")[:6]
+        )
+
+        return render(request, "quiz/list.html", {
+            "popular_quizzes": popular_quizzes
+        })
+
 
 class QuizDetailView(LoginRequiredMixin, DetailView):
     model = Quiz
@@ -23,41 +35,7 @@ class QuizDetailView(LoginRequiredMixin, DetailView):
 
 
 
-class QuizPlayView(LoginRequiredMixin, TemplateView):
-    template_name = "quiz/quiz_play.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        quiz = Quiz.objects.get(pk=self.kwargs["pk"])
-        context["quiz"] = quiz
-        context["questions"] = quiz.questions.prefetch_related("answers")
-        return context
-
-    def post(self, request, *args, **kwargs):
-        quiz = Quiz.objects.get(pk=self.kwargs["pk"])
-        questions = quiz.questions.all()
-        correct = 0
-
-        for question in questions:
-            # ⬅️ ПОЛУЧАЕМ СПИСОК ОТВЕТОВ
-            selected_ids = request.POST.getlist(f"question_{question.id}")
-            selected_ids = set(map(int, selected_ids))
-
-            correct_ids = set(
-                question.answers
-                .filter(correct=True)
-                .values_list("id", flat=True)
-            )
-
-            if selected_ids == correct_ids:
-                correct += 1
-
-        Result.objects.create(
-            user=request.user,
-            quiz=quiz,
-            score=correct
-        )
-        return redirect("quiz:result", pk=quiz.pk)
 class QuizResultView(LoginRequiredMixin, TemplateView):
     template_name = "quiz/quiz_result.html"
 
@@ -208,54 +186,15 @@ class RoomLobbyView(LoginRequiredMixin, DetailView):
 
         return context
 
-class StartRoomView(LoginRequiredMixin, View):
-    def get(self, request, code):
-        room = get_object_or_404(QuizRoom, code=code)
-
-        if room.host != request.user:
-            return redirect("quiz:room_lobby", code=code)
-
-        return redirect("quiz:play", pk=room.quiz.pk)
-
 class RoomPlayView(LoginRequiredMixin, TemplateView):
-    template_name = "quiz/quiz_play.html"
+    template_name = "quiz/game_play.html"
 
     def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         room = get_object_or_404(QuizRoom, code=self.kwargs["code"])
-
-        QuizPlayer.objects.get_or_create(
-            room=room,
-            user=self.request.user
+        player = get_object_or_404(
+            QuizPlayer, room=room, user=self.request.user
         )
-
-        ctx["room"] = room
-        ctx["quiz"] = room.quiz
-        ctx["questions"] = room.quiz.questions.prefetch_related("answers")
-        return ctx
-
-    def post(self, request, *args, **kwargs):
-        room = get_object_or_404(QuizRoom, code=self.kwargs["code"])
-        quiz = room.quiz
-        questions = quiz.questions.all()
-        correct = 0
-
-        for question in questions:
-            selected_ids = request.POST.getlist(f"question_{question.id}")
-            selected_ids = set(map(int, selected_ids))
-
-            correct_ids = set(
-                question.answers
-                .filter(correct=True)
-                .values_list("id", flat=True)
-            )
-
-            if selected_ids == correct_ids:
-                correct += 1
-
-        Result.objects.create(
-            user=request.user,
-            quiz=quiz,
-            score=correct
-        )
-        return redirect("quiz:result", pk=quiz.pk)
+        context["room"] = room
+        context["player"] = player
+        return context

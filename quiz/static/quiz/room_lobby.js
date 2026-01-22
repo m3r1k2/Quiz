@@ -1,50 +1,46 @@
-const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+console.log("🧠 lobby js loaded");
 
-const socket = new WebSocket(
-    protocol + "://" + window.location.host + "/ws/room/" + ROOM_CODE + "/"
-);
+const btn = document.getElementById("startBtn");
+console.log("🔍 startBtn =", btn);
 
-socket.onopen = () => {
-    console.log("✅ WS connected");
-};
+if (!btn) {
+    console.error("❌ startBtn NOT FOUND");
+} else {
+    const protocol = location.protocol === "https:" ? "wss" : "ws";
+    const socket = new WebSocket(
+        protocol + "://" + location.host + "/ws/room/" + ROOM_CODE + "/"
+    );
 
-socket.onerror = (e) => {
-    console.error("❌ WS error", e);
-};
+    socket.onopen = () => console.log("✅ WS connected");
+    socket.onerror = e => console.error("❌ WS error", e);
+    socket.onclose = () => console.warn("⚠ WS closed");
 
-socket.onclose = () => {
-    console.warn("⚠ WS closed");
-};
+    socket.onmessage = e => {
+        console.log("📩 WS RAW:", e.data);
+        const data = JSON.parse(e.data);
 
-socket.onmessage = function (e) {
-    console.log("📩 WS RAW:", e.data);
+        if (data.event === "players") {
+            const list = document.getElementById("players");
+            if (!list) return;
+            list.innerHTML = "";
+            data.players.forEach(u => list.innerHTML += `<li>${u}</li>`);
+        }
 
-    const data = JSON.parse(e.data);
-    console.log("📦 PARSED:", data);
+        if (data.event === "start") {
+            console.log("🚀 redirect to game");
+            window.location.href = data.url;
+        }
+    };
 
-    // обновление списка игроков
-    if (data.event === "players") {
-        const list = document.getElementById("players");
-        list.innerHTML = "";
+    btn.addEventListener("click", () => {
+        console.log("▶ start clicked");
 
-        data.players.forEach(username => {
-            list.innerHTML += `<li>${username}</li>`;
-        });
-    }
+        if (socket.readyState !== WebSocket.OPEN) {
+            console.error("❌ WS not ready");
+            return;
+        }
 
-    // старт игры → редирект
-    if (data.event === "start") {
-        console.log("🚀 REDIRECT TO:", data.url);
-        window.location.href = data.url;
-    }
-};
-
-function startGame() {
-    if (socket.readyState !== WebSocket.OPEN) {
-        console.error("❌ WS not ready");
-        return;
-    }
-
-    console.log("▶ start pressed");
-    socket.send(JSON.stringify({ action: "start" }));
+        socket.send(JSON.stringify({ action: "start" }));
+        console.log("📤 start sent");
+    });
 }

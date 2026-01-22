@@ -2,39 +2,34 @@
 {% block title %}Вікторини{% endblock %}
 
 {% block content %}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h2 class="mb-0">Список вікторин</h2>
+  <h3>Вікторини</h3>
 
   {% if user.is_authenticated %}
-    <a href="{% url 'quiz:create' %}" class="btn btn-success">➕ Створити вікторину</a>
-  <a href="{% url 'quiz:room_join' %}" class="btn btn-secondary">
-    Приєднатися до кімнати
-</a>
+  <div class="d-flex gap-2">
+    <a href="{% url 'quiz:create' %}" class="btn btn-success">Створити</a>
+    <a href="{% url 'quiz:room_join' %}" class="btn btn-main">Код</a>
+  </div>
   {% endif %}
 </div>
 
 <div class="row">
   {% for quiz in quizzes %}
-  <div class="col-md-4 mb-3">
-    <div class="card shadow-sm h-100">
-      <div class="card-body d-flex flex-column">
-        <h5 class="card-title">{{ quiz.title }}</h5>
+  <div class="col-md-4 mb-4">
+    <div class="card-soft p-4 h-100">
+      <h5 class="fw-bold">{{ quiz.title }}</h5>
+      <p class="text-muted small mb-1">Тема: {{ quiz.theme }}</p>
+      <p class="text-muted small">Складність: {{ quiz.complexity }}</p>
 
-        <p class="card-text flex-grow-1">
-          <strong>Тема:</strong> {{ quiz.theme }}<br>
-          <strong>Складність:</strong> {{ quiz.complexity }}<br>
-          <strong>Питань:</strong> {{ quiz.que_count }}
-        </p>
-
-        <a href="{% url 'quiz:detail' quiz.pk %}" class="btn btn-primary w-100 mt-auto">
-          Переглянути
-        </a>
-      </div>
-
+      <a href="{% url 'quiz:detail' quiz.pk %}" class="btn btn-main mt-auto w-100">
+        Переглянути
+      </a>
     </div>
   </div>
   {% empty %}
-  <p class="text-center text-muted">Немає вікторин.</p>
+  <p class="text-muted text-center">Вікторин поки немає</p>
   {% endfor %}
 </div>
+
 {% endblock %}
