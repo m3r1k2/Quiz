@@ -3,10 +3,15 @@
 
 {% block content %}
 <h2 class="mb-3">Вхід</h2>
-<form method="post" class="card p-3 shadow-sm">
+
+<form method="post" class="card p-4 shadow-sm">
   {% csrf_token %}
   {{ form.as_p }}
-  <button type="submit" class="btn btn-success">Увійти</button>
+  <button type="submit" class="btn btn-main mt-2">Увійти</button>
 </form>
-<p class="mt-3">Немає акаунта? <a href="{% url 'accounts:register' %}">Зареєструйся</a></p>
+
+<p class="mt-3">
+  Немає акаунта?
+  <a href="{% url 'accounts:register' %}">Зареєструйся</a>
+</p>
 {% endblock %}

@@ -1,92 +1,98 @@
 {% extends "main.html" %}
+{% block title %}Онлайн-вікторина{% endblock %}
+
 {% block content %}
-<h2>Онлайн-вікторина</h2>
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card quiz-card p-4 text-center">
+      <h2 class="fw-bold mb-3">🎮 Онлайн‑вікторина</h2>
 
-<div id="question-block" style="display:none;">
-    <h3 id="question-text"></h3>
-    <div id="answers"></div>
+      <div id="question-block" style="display:none;">
+        <h4 id="question-text" class="mb-4"></h4>
 
-    <button class="btn btn-primary mt-3" id="answerBtn">Ответить</button>
+        <div id="answers" class="d-grid gap-2 mb-3"></div>
 
-    <p class="mt-2">⏳ Час: <span id="timer"></span> с</p>
+        <p class="text-muted">
+          ⏳ Час: <span id="timer"></span> c
+        </p>
 
-    {% if room.host == user %}
-    <button class="btn btn-warning mt-2" id="forceBtn">
-        ➡ Следующий вопрос (хост)
-    </button>
-    {% endif %}
+        <button class="btn btn-main w-100 mb-2" id="answerBtn">
+          ✅ Відповісти
+        </button>
+
+        {% if room.host == user %}
+        <button class="btn btn-outline w-100" id="forceBtn">
+          ➡ Наступне питання (хост)
+        </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
-
-<div id="results" style="display:none;"></div>
 
 <script>
 const roomCode = "{{ room.code }}";
 const playerId = {{ player.id }};
+const resultUrl = "{% url 'quiz:room_result' room.code %}";
 
 let answered = false;
 let currentQuestionId = null;
 let timerInterval = null;
 
-
 const socket = new WebSocket(
-    (location.protocol === "https:" ? "wss" : "ws") +
-    "://" + location.host +
-    "/ws/room/" + roomCode + "/?play=1"
+  (location.protocol === "https:" ? "wss" : "ws")
+  + "://" + location.host
+  + "/ws/room/" + roomCode + "/?play=1"
 );
 
 socket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    if (data.event === "question") showQuestion(data);
-    if (data.event === "finish") showResults(data.results);
+  const data = JSON.parse(e.data);
+  if (data.event === "question") showQuestion(data);
+  if (data.event === "finish") window.location.href = resultUrl;
 };
 
 function showQuestion(data) {
-    answered = false;
-    currentQuestionId = data.id;
+  answered = false;
+  currentQuestionId = data.id;
 
-    document.getElementById("question-block").style.display = "block";
-    document.getElementById("results").style.display = "none";
-    document.getElementById("question-text").innerText = data.text;
+  document.getElementById("question-block").style.display = "block";
+  document.getElementById("question-text").innerText = data.text;
 
-    const answersDiv = document.getElementById("answers");
-    answersDiv.innerHTML = "";
+  const answers = document.getElementById("answers");
+  answers.innerHTML = "";
 
-    data.answers.forEach(a => {
-        answersDiv.innerHTML += `
-            <div>
-                <input type="checkbox" value="${a.id}" class="answer">
-                ${a.text}
-            </div>
-        `;
-    });
+  data.answers.forEach(a => {
+    answers.innerHTML += `
+      <label class="border rounded p-3 text-start">
+        <input type="checkbox" class="answer me-2" value="${a.id}">
+        ${a.text}
+      </label>`;
+  });
 
-    document.getElementById("answerBtn").disabled = false;
-    startTimer(data.time);
+  document.getElementById("answerBtn").disabled = false;
+  startTimer(data.time);
 }
 
 document.getElementById("answerBtn").onclick = () => {
-    if (answered) return;
-    answered = true;
+  if (answered) return;
+  answered = true;
 
-    document.getElementById("answerBtn").disabled = true;
+  const selected = [...document.querySelectorAll(".answer:checked")]
+    .map(x => parseInt(x.value));
 
-    const selected = [...document.querySelectorAll(".answer:checked")]
-        .map(x => parseInt(x.value));
+  socket.send(JSON.stringify({
+    action: "answer",
+    player_id: playerId,
+    question_id: currentQuestionId,
+    answers: selected
+  }));
 
-    socket.send(JSON.stringify({
-        action: "answer",
-        player_id: playerId,
-        question_id: currentQuestionId,
-        answers: selected
-    }));
-
-    document.getElementById("answers").innerHTML +=
-        "<p>⏳ Ждём других игроков...</p>";
+  document.getElementById("answerBtn").disabled = true;
 };
 
 {% if room.host == user %}
 document.getElementById("forceBtn").onclick = () => {
-    socket.send(JSON.stringify({ action: "force_next" }));
+  socket.send(JSON.stringify({ action: "force_next" }));
 };
 {% endif %}
 
@@ -98,24 +104,8 @@ function startTimer(seconds) {
   timerInterval = setInterval(() => {
     seconds--;
     timer.innerText = seconds;
-
-    if (seconds <= 0) {
-      clearInterval(timerInterval);
-      document.getElementById("answerBtn").disabled = true;
-    }
+    if (seconds <= 0) clearInterval(timerInterval);
   }, 1000);
-}
-function showResults(results) {
-    const box = document.getElementById("results");
-    box.innerHTML = "<h3>Результаты</h3><ul>";
-
-    results.forEach(r => {
-        box.innerHTML += `<li>${r.user__username} — ${r.score}</li>`;
-    });
-
-    box.innerHTML += "</ul>";
-    box.style.display = "block";
-    document.getElementById("question-block").style.display = "none";
 }
 </script>
 {% endblock %}

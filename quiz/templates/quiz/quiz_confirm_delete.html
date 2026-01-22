@@ -2,13 +2,31 @@
 {% block title %}Видалити вікторину{% endblock %}
 
 {% block content %}
-<div class="card shadow-sm p-4 text-center">
-  <h3>Видалити "{{ quiz.title }}"?</h3>
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4 text-center shadow-lg rounded-4 border-danger">
 
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger w-100 mt-3">Так, видалити</button>
-    <a href="{% url 'quiz:detail' quiz.pk %}" class="btn btn-secondary w-100 mt-2">Скасувати</a>
-  </form>
+      <h3 class="mb-3 text-danger">⚠️ Видалення вікторини</h3>
+
+      <p class="mb-4">
+        Ви дійсно хочете видалити
+        <strong>«{{ quiz.title }}»</strong>?
+        <br>
+        <span class="text-muted">Цю дію неможливо скасувати</span>
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger w-100 btn-glow mb-2">
+          Так, видалити
+        </button>
+        <a href="{% url 'quiz:detail' quiz.pk %}"
+           class="btn btn-outline w-100 btn-glow">
+          Скасувати
+        </a>
+      </form>
+
+    </div>
+  </div>
 </div>
 {% endblock %}

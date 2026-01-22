@@ -3,10 +3,14 @@
 
 {% block content %}
 <h2>Редагування профілю</h2>
-<form method="post" enctype="multipart/form-data" class="card p-3 shadow-sm">
+
+<form method="post" enctype="multipart/form-data" class="card p-4 shadow-sm mt-3">
   {% csrf_token %}
   {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Зберегти</button>
+
+  <div class="d-flex gap-3 mt-3">
+    <button type="submit" class="btn btn-main">Зберегти</button>
+    <a href="{% url 'accounts:profile' %}" class="btn btn-outline">Назад</a>
+  </div>
 </form>
-<a href="{% url 'accounts:profile' %}" class="btn btn-secondary mt-3">Назад</a>
 {% endblock %}

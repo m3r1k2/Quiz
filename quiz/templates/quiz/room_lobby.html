@@ -1,26 +1,47 @@
 {% extends "main.html" %}
 {% load static %}
+{% block title %}Кімната {{ object.code }}{% endblock %}
 
 {% block content %}
-<h2>Кімната: {{ object.code }}</h2>
+<div class="row justify-content-center">
+  <div class="col-md-6">
 
-<ul id="players">
-  {% for p in players %}
-    <li>{{ p.user.username }}</li>
-  {% endfor %}
-</ul>
+    <div class="card p-4 shadow-lg rounded-4">
 
-{% if request.user == object.host %}
-  <button
-    id="startBtn"
-    type="button"
-    class="btn btn-main mt-3"
-  >
-    ▶ Start
-  </button>
-{% else %}
-  <p class="text-muted">Очікуємо хоста…</p>
-{% endif %}
+      <div class="text-center mb-4">
+        <h3 class="fw-bold">Кімната</h3>
+        <span class="badge bg-primary fs-6">
+          {{ object.code }}
+        </span>
+      </div>
+
+      <h6 class="text-muted mb-2">Гравці в кімнаті</h6>
+      <ul id="players" class="list-group mb-3">
+        {% for p in players %}
+          <li class="list-group-item d-flex justify-content-between">
+            {{ p.user.username }}
+            {% if p.user == object.host %}
+              <span class="badge bg-success">HOST</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+
+      {% if request.user == object.host %}
+        <button id="startBtn"
+                type="button"
+                class="btn btn-main w-100 btn-glow">
+          ▶ Почати вікторину
+        </button>
+      {% else %}
+        <p class="text-muted text-center mb-0">
+          Очікуємо, поки хост почне гру…
+        </p>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}

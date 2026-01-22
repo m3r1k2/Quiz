@@ -1,128 +1,211 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <title>{% block title %}Онлайн-вікторина{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>{% block title %}Головна{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-        :root {
-            --grad-main: linear-gradient(135deg, #6366f1, #8b5cf6);
-            --grad-btn: linear-gradient(135deg, #6a85ff, #8f6fff);
-            --grad-danger: linear-gradient(135deg, #ef4444, #dc2626);
-            --bg-soft: linear-gradient(135deg, #eef2ff, #f8fafc);
-        }
+  <style>
+    :root {
+      --grad-main: linear-gradient(135deg, #6366f1, #8b5cf6);
+      --grad-btn: linear-gradient(135deg, #6a85ff, #8f6fff);
+      --grad-danger: linear-gradient(135deg, #ef4444, #dc2626);
+      --bg-soft: linear-gradient(135deg, #eef2ff, #f8fafc);
+    }
 
-        body {
-            min-height: 100vh;
-            background: var(--bg-soft);
-            font-family: Inter, system-ui, sans-serif;
-        }
+    body {
+      min-height: 100vh;
+      background: var(--bg-soft);
+      font-family: Inter, system-ui, sans-serif;
+    }
 
-        /* NAVBAR */
-        .navbar {
-            background: var(--grad-main);
-            border-bottom-left-radius: 18px;
-            border-bottom-right-radius: 18px;
-        }
+    /* NAVBAR */
+    .navbar {
+      background: var(--grad-main);
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+    }
 
-        .navbar-brand {
-            font-weight: 700;
-        }
+    /* ===== NAV LINKS (ГОЛОВНА / ВІКТОРИНИ) ===== */
+    .navbar-brand,
+    .navbar .nav-link {
+      position: relative;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .25s ease;
+      padding-bottom: 6px;
+    }
 
-        /* CONTENT */
-        .content-wrapper {
-            max-width: 1200px;
-            margin: auto;
-        }
+    /* glowing underline */
+    .navbar-brand::after,
+    .navbar .nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0%;
+      height: 3px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #a5b4fc, #c4b5fd);
+      box-shadow: 0 0 14px rgba(165,180,252,.9);
+      transition: .35s ease;
+    }
 
-        /* BUTTONS */
-        .btn-main {
-            background: var(--grad-btn);
-            color: #fff;
-            border-radius: 14px;
-            padding: 10px 18px;
-            border: none;
-            transition: .25s;
-        }
+    .navbar-brand:hover,
+    .navbar .nav-link:hover {
+      transform: translateY(-1px);
+      color: #fff !important;
+    }
 
-        .btn-main:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,.25);
-            color: #fff;
-        }
+    .navbar-brand:hover::after,
+    .navbar .nav-link:hover::after {
+      width: 100%;
+    }
 
-        .btn-danger {
-            background: var(--grad-danger);
-            border-radius: 14px;
-            border: none;
-        }
+    /* active page */
+    .navbar .active::after {
+      width: 100%;
+    }
 
-        .btn-danger:hover {
-            transform: none;
-            box-shadow: none;
-        }
+    /* CONTENT */
+    .content-wrapper {
+      max-width: 1200px;
+      margin: auto;
+    }
 
-        footer {
-            background: rgba(255,255,255,.7);
-            backdrop-filter: blur(6px);
-        }
-    </style>
+    /* BUTTONS */
+    .btn {
+      border-radius: 14px;
+      padding: 10px 20px;
+      transition: .25s;
+    }
+
+    .btn-main {
+      background: var(--grad-btn);
+      color: #fff;
+      border: none;
+    }
+
+    .btn-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #8b5cf6;
+      color: #6a85ff;
+    }
+
+    .btn-outline:hover {
+      background: var(--grad-btn);
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(99,102,241,.35);
+    }
+
+    .btn-danger {
+      background: var(--grad-danger);
+      border: none;
+      color: #fff;
+    }
+
+    /* QUIZ CARDS — НЕ ТРОГАЕМ */
+    .quiz-card {
+      background: rgba(255,255,255,.9);
+      border-radius: 18px;
+      padding: 20px;
+      height: 100%;
+      transition: .35s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quiz-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none; /* ← ВОТ ЭТО ФИКСИТ КЛИКИ */
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(139,92,246,.25),
+        transparent
+    );
+    opacity: 0;
+    transition: .35s;
+}
+
+    .quiz-card:hover::before {
+      opacity: 1;
+      animation: shine 1.6s linear infinite;
+    }
+
+    .quiz-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(99,102,241,.35);
+    }
+
+    @keyframes shine {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
+    }
+
+    footer {
+      background: rgba(255,255,255,.7);
+      backdrop-filter: blur(6px);
+    }
+  </style>
 </head>
 
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'home' %}">
-            Онлайн‑вікторина
-        </a>
+  <div class="container">
 
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'quiz:list' %}">Вікторини</a>
-                </li>
-            </ul>
+    <!-- ГОЛОВНА -->
+    <a class="navbar-brand {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+       href="{% url 'home' %}">
+      Головна
+    </a>
 
-            <div class="d-flex gap-2">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'accounts:profile' %}" class="btn btn-main">
-                        Профіль
-                    </a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav me-auto ms-3">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'quiz:list' %}active{% endif %}"
+             href="{% url 'quiz:list' %}">
+            Вікторини
+          </a>
+        </li>
+      </ul>
 
-                    <form method="post" action="{% url 'accounts:logout' %}">
-                        {% csrf_token %}
-                        <button class="btn btn-danger">
-                            Вийти
-                        </button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'accounts:login' %}" class="btn btn-main">
-                        Увійти
-                    </a>
-                {% endif %}
-            </div>
-        </div>
+      <div class="d-flex gap-2">
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:profile' %}" class="btn btn-main">Профіль</a>
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="btn btn-danger">Вийти</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="btn btn-main">Увійти</a>
+        {% endif %}
+      </div>
     </div>
+  </div>
 </nav>
 
 <div class="container content-wrapper mb-5">
-    {% block content %}{% endblock %}
+  {% block content %}{% endblock %}
 </div>
 
 <footer class="text-center py-3 border-top">
-    <small class="text-muted">© 2025 Онлайн‑вікторина</small>
+  <small class="text-muted">© 2025 Онлайн‑вікторина</small>
 </footer>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- PAGE SCRIPTS -->
 {% block scripts %}{% endblock %}
-
 </body>
 </html>

@@ -1,14 +1,12 @@
-# online_quiz/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-
-from core.views import HomeView  # 👈 ВАЖНО
+from core.views import home   # 👈 функция, НЕ класс
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', HomeView, name='home'),  # 👈 БЕЗ ()
+    path("", home, name="home"),
     path('accounts/', include('accounts.urls')),
     path('quiz/', include('quiz.urls')),
 ]

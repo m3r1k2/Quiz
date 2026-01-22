@@ -2,12 +2,56 @@
 {% block title %}Результат{% endblock %}
 
 {% block content %}
-<div class="card p-4 shadow-sm text-center">
-  <h2>Результат "{{ quiz.title }}"</h2>
-  <p class="fs-4 mt-3">Ваш результат: <strong>{{ score }}</strong> правильних відповідей</p>
+<div class="row justify-content-center">
+  <div class="col-md-8">
 
-  <a href="{% url 'quiz:list' %}" class="btn btn-primary mt-3">
-    Повернутись до списку
-  </a>
+    <div class="card quiz-card text-center p-4">
+
+      <h2 class="fw-bold mb-2">🏁 Результат вікторини</h2>
+      <p class="text-muted mb-4">«{{ quiz.title }}»</p>
+
+      <!-- ТВОЙ РЕЗУЛЬТАТ -->
+      <div class="mb-4">
+        <h4>Ваш результат</h4>
+        <div class="display-5 fw-bold text-primary">
+          {{ score }}
+        </div>
+        <p class="text-muted">правильних відповідей</p>
+      </div>
+
+      <!-- ПОБЕДИТЕЛЬ -->
+      {% if winner %}
+        <div class="border rounded p-3 mb-4 bg-light">
+          <h5 class="fw-bold mb-2">🏆 Переможець</h5>
+          <p class="mb-1">
+            <strong>{{ winner.user.username }}</strong>
+          </p>
+          <p class="text-muted mb-0">
+            {{ winner.score }} балів
+          </p>
+
+          {% if is_winner %}
+            <div class="alert alert-success mt-3">
+              🎉 Вітаємо! Ви переможець цієї вікторини
+            </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <p class="text-muted">Результатів поки немає</p>
+      {% endif %}
+
+      <!-- КНОПКИ -->
+      <div class="d-flex flex-column gap-2 mt-3">
+        <a href="{% url 'quiz:list' %}" class="btn btn-main">
+          Повернутися до вікторин
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-outline">
+          На головну
+        </a>
+      </div>
+
+    </div>
+
+  </div>
 </div>
 {% endblock %}

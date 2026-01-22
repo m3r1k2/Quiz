@@ -150,7 +150,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
         if data.get("action") == "start" and not self.is_play:
             if not await self.check_is_host():
                 return
-
             await self.channel_layer.group_send(
                 self.room_group,
                 {
@@ -163,9 +162,17 @@ class RoomConsumer(AsyncWebsocketConsumer):
             )
             return
 
-        # ANSWER (МОГУТ ВСЕ)
+        # ANSWER
         if data.get("action") == "answer" and self.is_play:
             await self.process_answer(data)
+            return
+
+        # ✅ FORCE NEXT QUESTION (ТОЛЬКО ХОСТ)
+        if data.get("action") == "force_next" and self.is_play:
+            if not await self.check_is_host():
+                return
+            await self.force_next_question()
+            return
 
     # ================= ANSWERS =================
 

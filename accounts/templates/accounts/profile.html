@@ -2,21 +2,66 @@
 {% block title %}Мій профіль{% endblock %}
 
 {% block content %}
-<h2>Профіль користувача</h2>
-<div class="card p-3 shadow-sm mt-3">
-  {% if user.avatar %}
-    <img src="{{ user.avatar.url }}" alt="Avatar" width="150" class="rounded mb-3">
-  {% endif %}
-  <p><strong>Ім'я користувача:</strong> {{ user.username }}</p>
-  <p><strong>Email:</strong> {{ user.email }}</p>
-  <p><strong>Роль:</strong> {{ user.get_role_display }}</p>
-  <p><strong>Опис:</strong> {{ user.bio|default:"Немає опису" }}</p>
-  <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary mt-2">Редагувати профіль</a>
-  <a href="{% url 'accounts:my_results' %}" class="btn btn-secondary mt-2">
-  Історія проходжень
-</a>
-  <a href="{% url 'accounts:my_quizzes' %}" class="btn btn-primary">Мої вікторини</a>
+<h2 class="mb-3">Профіль</h2>
 
+<div class="card p-4 shadow-sm mt-3 text-center">
+
+  {% if user.avatar %}
+    <img src="{{ user.avatar.url }}" class="rounded-circle mb-3 shadow" width="140">
+  {% endif %}
+
+  <h4 class="mb-0">{{ user.username }}</h4>
+  <p class="text-muted">{{ user.email }}</p>
+
+  <p class="fst-italic mt-3">
+    {{ user.bio|default:"✨ Додай опис у профілі" }}
+  </p>
+
+  <hr class="my-4">
+
+  <div class="d-flex flex-column gap-3 align-items-center">
+
+    <!-- ЦЕНТРАЛЬНАЯ (ЗИМНИЙ ГРАДИЕНТ) -->
+    <a href="{% url 'accounts:profile_edit' %}"
+       class="btn btn-winter">
+      ✏️ Редагувати профіль
+    </a>
+
+    <!-- ОСТАЛЬНЫЕ -->
+    <a href="{% url 'accounts:my_results' %}" class="btn btn-outline btn-fixed">
+      📊 Історія проходжень
+    </a>
+
+    <a href="{% url 'accounts:my_quizzes' %}" class="btn btn-outline btn-fixed">
+      🎮 Мої вікторини
+    </a>
+
+  </div>
 </div>
 
+<style>
+  /* одинаковый размер */
+  .btn-fixed,
+  .btn-winter {
+    width: 260px;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-weight: 500;
+  }
+
+  /* зимний градиент */
+  .btn-winter {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 22px rgba(99,102,241,.35);
+    transition: .3s ease;
+  }
+
+  .btn-winter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(56,189,248,.45);
+    color: #fff;
+  }
+</style>
 {% endblock %}

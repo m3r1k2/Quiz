@@ -2,34 +2,74 @@
 {% block title %}{{ quiz.title }}{% endblock %}
 
 {% block content %}
-<div class="card shadow-sm p-4">
-    <h2>{{ quiz.title }}</h2>
-    <p class="text-muted">Автор: {{ quiz.author }}</p>
-    <p><strong>Тема:</strong> {{ quiz.theme }}</p>
-    <p><strong>Складність:</strong> {{ quiz.complexity }}</p>
-    <p><strong>Кількість питань:</strong> {{ quiz.que_count }}</p>
+<div class="card shadow-sm p-4 quiz-detail-card">
+  <h2>{{ quiz.title }}</h2>
 
-    <a href="{% url 'quiz:room_create' quiz.pk %}"
-       class="btn btn-success w-100 mt-3">
-        ➕ Створити кімнату
-    </a>
+  <p class="text-muted">Автор: {{ quiz.author }}</p>
+  <p><strong>Тема:</strong> {{ quiz.theme }}</p>
+  <p><strong>Складність:</strong> {{ quiz.complexity }}</p>
+  <p><strong>Кількість питань:</strong> {{ quiz.que_count }}</p>
 
-    <a href="{% url 'quiz:room_join' %}"
-       class="btn btn-secondary w-100 mt-2">
-        🔑 Увійти по коду
-    </a>
+  <a href="{% url 'quiz:room_create' quiz.pk %}"
+     class="btn btn-main w-100 mt-3 btn-glow">
+    ➕ Створити кімнату
+  </a>
+
+  <!-- ❄️ ЗИМНИЙ ГРАДИЕНТ -->
+  <a href="{% url 'quiz:room_join' %}"
+     class="btn btn-winter w-100 mt-2 btn-glow">
+    🔑 Увійти по коду
+  </a>
 </div>
 
 {% if user.is_superuser %}
-    <a href="{% url 'quiz:edit' quiz.pk %}" class="btn btn-warning mt-2">
-        Редагувати
+  <div class="mt-3 d-flex flex-wrap gap-2">
+    <!-- ❄️ ЗИМНИЙ -->
+    <a href="{% url 'quiz:edit' quiz.pk %}"
+       class="btn btn-winter btn-glow">
+      ✏️ Редагувати
     </a>
-    <a href="{% url 'quiz:delete' quiz.pk %}" class="btn btn-danger mt-2">
-        Видалити
+
+    <a href="{% url 'quiz:delete' quiz.pk %}"
+       class="btn btn-danger btn-glow">
+      🗑️ Видалити
     </a>
+
     <a href="{% url 'quiz:question_create' quiz.pk %}"
-       class="btn btn-primary mt-2">
-        Додати запитання
+       class="btn btn-outline btn-glow">
+      ➕ Додати запитання
     </a>
+  </div>
 {% endif %}
+
+<style>
+  /* ✨ ОБЩЕЕ СВЕЧЕНИЕ КНОПОК */
+  .btn-glow {
+    transition: .3s ease;
+  }
+
+  .btn-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(99,102,241,.35);
+  }
+
+  /* ❄️ ЗИМНИЙ ГРАДИЕНТ */
+  .btn-winter {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 22px rgba(56,189,248,.35);
+  }
+
+  .btn-winter:hover {
+    color: #fff;
+    box-shadow: 0 16px 34px rgba(56,189,248,.55);
+  }
+
+  /* карточка мягче */
+  .quiz-detail-card {
+    border-radius: 18px;
+    background: rgba(255,255,255,.95);
+  }
+</style>
 {% endblock %}
